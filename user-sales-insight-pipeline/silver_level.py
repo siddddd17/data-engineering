@@ -54,22 +54,6 @@ users_silver.display()
 
 # COMMAND ----------
 
-joined_df = (orders_df
-    .join(users_df, orders_df.user_id == users_df.id, "left")
-    .join(products_df, orders_df.product_id == products_df.product_id, "left")
-    .select(
-        orders_df["*"],
-        users_df.name.alias("user_name"),
-        users_df.email.alias("user_email"),
-        products_df.product_name,
-        products_df.category.alias("product_category"),
-        products_df.price.alias("product_price")
-    )
-)
-joined_df.dropna().display()
-
-# COMMAND ----------
-
 # 2. Modify orders table
 from pyspark.sql.functions import *
 orders_silver = (orders_df
