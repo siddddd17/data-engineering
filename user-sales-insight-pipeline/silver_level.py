@@ -56,14 +56,14 @@ users_silver.display()
 
 # 2. Modify orders table
 from pyspark.sql.functions import *
-orders_silver = (orders_df
+orders_silver = (orders_df.dropna()
     .withColumn("order_amount", col("order_amount") * col("quantity"))
     .groupBy("order_id", "user_id", "order_date")
     .agg(
         collect_set("product_id").alias("product_id"),
         sum("order_amount").alias("total_order_amount"),
         sum("quantity").alias("quantity")
-    ).dropna()
+    )
 )
 orders_silver.dropna().display()
 
@@ -75,7 +75,10 @@ products_silver = products_df
 
 #helper methods
 def write_to_table(df, table):
-    df.write.format("delta").mode("overwrite").saveAsTable("silverlayer_schema.table")
+    df.write.format("delta").mode("overwrite").saveAsTable(f"silverlayer_schema.{table}")
+def print_table(table):
+    print(f"\nSample rows from {table} table:")
+    spark.table(f"silverlayer_schema.{table}").show(10, truncate=False)
 
 # COMMAND ----------
 
@@ -85,14 +88,9 @@ write_to_table(products_silver, "products")
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
-print("\nSample rows from orders table:")
-spark.table("silverlayer_schema.orders").show(5, truncate=False)
-print("\nSample rows from users table:")
-spark.table("silverlayer_schema.users").show(5, truncate=False)
+print_table("users")
+print_table("orders")
+print_table("products")
 
 # COMMAND ----------
 
